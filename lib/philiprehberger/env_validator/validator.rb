@@ -23,23 +23,9 @@ module Philiprehberger
         values = {}
 
         @schema.definitions.each do |name, definition|
-          raw = @env[name]
-
-          if raw.nil? || raw.empty?
-            if definition[:required] && definition[:default].nil?
-              errors << "Missing required variable: #{name}"
-              next
-            end
-
-            values[name] = definition[:default]
-            next
-          end
-
-          begin
-            values[name] = cast(raw, definition[:type], name)
-          rescue CastError => e
-            errors << e.message
-          end
+          value, error = resolve(name, definition)
+          errors << error if error
+          values[name] = value unless error
         end
 
         raise ValidationError, errors.join("; ") unless errors.empty?
@@ -49,18 +35,31 @@ module Philiprehberger
 
       private
 
+      def resolve(name, definition)
+        raw = @env[name]
+
+        return resolve_missing(name, definition) if raw.nil? || raw.empty?
+
+        [cast(raw, definition[:type], name), nil]
+      rescue CastError => e
+        [nil, e.message]
+      end
+
+      def resolve_missing(name, definition)
+        if definition[:required] && definition[:default].nil?
+          [nil, "Missing required variable: #{name}"]
+        else
+          [definition[:default], nil]
+        end
+      end
+
       def cast(value, type, name)
         case type
-        when :string
-          value
-        when :integer
-          Integer(value)
-        when :float
-          Float(value)
-        when :boolean
-          cast_boolean(value, name)
-        else
-          raise CastError, "Unknown type #{type} for #{name}"
+        when :string  then value
+        when :integer then Integer(value)
+        when :float   then Float(value)
+        when :boolean then cast_boolean(value, name)
+        else raise CastError, "Unknown type #{type} for #{name}"
         end
       rescue ArgumentError
         raise CastError, "Cannot cast #{name}=#{value.inspect} to #{type}"
