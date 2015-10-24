@@ -40,7 +40,9 @@ module Philiprehberger
 
         return resolve_missing(name, definition) if raw.nil? || raw.empty?
 
-        [cast(raw, definition[:type], name), nil]
+        value = cast(raw, definition[:type], name)
+        validate_choices(name, value, definition[:choices])
+        [value, nil]
       rescue CastError => e
         [nil, e.message]
       end
@@ -51,6 +53,12 @@ module Philiprehberger
         else
           [definition[:default], nil]
         end
+      end
+
+      def validate_choices(name, value, choices)
+        return if choices.nil? || choices.include?(value)
+
+        raise CastError, "#{name} must be one of: #{choices.join(', ')}"
       end
 
       def cast(value, type, name)

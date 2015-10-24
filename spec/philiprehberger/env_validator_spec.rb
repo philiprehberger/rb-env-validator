@@ -88,6 +88,32 @@ RSpec.describe Philiprehberger::EnvValidator do
 
       expect(result[:HOST]).to eq("localhost")
     end
+
+    context "with choices option" do
+      it "accepts a valid choice" do
+        result = described_class.define(env: { "ENV" => "production" }) do
+          string :ENV, choices: %w[production staging development]
+        end
+
+        expect(result[:ENV]).to eq("production")
+      end
+
+      it "raises ValidationError for an invalid choice" do
+        expect do
+          described_class.define(env: { "ENV" => "invalid" }) do
+            string :ENV, choices: %w[production staging]
+          end
+        end.to raise_error(Philiprehberger::EnvValidator::ValidationError, /must be one of: production, staging/)
+      end
+
+      it "works with integer choices" do
+        result = described_class.define(env: { "LEVEL" => "3" }) do
+          integer :LEVEL, choices: [1, 2, 3]
+        end
+
+        expect(result[:LEVEL]).to eq(3)
+      end
+    end
   end
 end
 
@@ -107,6 +133,32 @@ RSpec.describe Philiprehberger::EnvValidator::Result do
   describe "#[]" do
     it "is an alias for fetch" do
       expect(result[:HOST]).to eq("localhost")
+    end
+  end
+
+  describe "#keys" do
+    it "returns all defined variable names" do
+      expect(result.keys).to contain_exactly("PORT", "HOST")
+    end
+  end
+
+  describe "#key?" do
+    it "returns true for defined variables" do
+      expect(result.key?(:PORT)).to be true
+    end
+
+    it "returns false for undefined variables" do
+      expect(result.key?(:UNKNOWN)).to be false
+    end
+  end
+
+  describe "#slice" do
+    it "returns a subset hash of specific keys" do
+      expect(result.slice(:PORT)).to eq({ "PORT" => 3000 })
+    end
+
+    it "returns an empty hash for unknown keys" do
+      expect(result.slice(:UNKNOWN)).to eq({})
     end
   end
 

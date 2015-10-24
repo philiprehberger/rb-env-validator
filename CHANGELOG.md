@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-03-13
+
+### Added
+- `choices:` option for enum/allowlist validation on all schema types
+- `Result#keys` method to list all defined variable names
+- `Result#key?` method to check if a variable was defined
+- `Result#slice` method to return a subset hash of specific keys
+
 ## [0.1.0] - 2026-03-10
 
 ### Added
