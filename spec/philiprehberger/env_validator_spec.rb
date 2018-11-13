@@ -113,6 +113,88 @@ RSpec.describe Philiprehberger::EnvValidator do
 
         expect(result[:LEVEL]).to eq(3)
       end
+
+      it "rejects invalid integer choice" do
+        expect do
+          described_class.define(env: { "LEVEL" => "5" }) do
+            integer :LEVEL, choices: [1, 2, 3]
+          end
+        end.to raise_error(Philiprehberger::EnvValidator::ValidationError, /must be one of/)
+      end
+    end
+
+    context "with float values" do
+      it "casts integer-like strings to float" do
+        result = described_class.define(env: { "RATE" => "42" }) do
+          float :RATE
+        end
+
+        expect(result[:RATE]).to eq(42.0)
+        expect(result[:RATE]).to be_a(Float)
+      end
+
+      it "raises CastError for non-numeric float" do
+        expect do
+          described_class.define(env: { "RATE" => "abc" }) do
+            float :RATE
+          end
+        end.to raise_error(Philiprehberger::EnvValidator::ValidationError, /Cannot cast RATE/)
+      end
+    end
+
+    it "handles boolean case insensitivity" do
+      %w[TRUE True YES Yes ON On].each do |val|
+        result = described_class.define(env: { "FLAG" => val }) do
+          boolean :FLAG
+        end
+        expect(result[:FLAG]).to be(true), "Expected #{val.inspect} to cast to true"
+      end
+    end
+
+    it "collects multiple errors for multiple missing required vars" do
+      expect do
+        described_class.define(env: {}) do
+          string :A, required: true
+          string :B, required: true
+          string :C, required: true
+        end
+      end.to raise_error(Philiprehberger::EnvValidator::ValidationError) { |e|
+        expect(e.message).to include("A")
+        expect(e.message).to include("B")
+        expect(e.message).to include("C")
+      }
+    end
+
+    it "does not raise for optional variables missing from env" do
+      result = described_class.define(env: {}) do
+        string :OPTIONAL_VAR
+      end
+
+      expect(result[:OPTIONAL_VAR]).to be_nil
+    end
+
+    it "uses default when variable is not present" do
+      result = described_class.define(env: {}) do
+        string :HOST, default: "default-host"
+      end
+
+      expect(result[:HOST]).to eq("default-host")
+    end
+
+    it "prefers env value over default" do
+      result = described_class.define(env: { "HOST" => "env-host" }) do
+        string :HOST, default: "default-host"
+      end
+
+      expect(result[:HOST]).to eq("env-host")
+    end
+
+    it "required with default does not raise when missing" do
+      result = described_class.define(env: {}) do
+        string :HOST, required: true, default: "fallback"
+      end
+
+      expect(result[:HOST]).to eq("fallback")
     end
   end
 end
@@ -166,6 +248,24 @@ RSpec.describe Philiprehberger::EnvValidator::Result do
     it "returns a copy of all values" do
       hash = result.to_h
       expect(hash).to eq({ "PORT" => 3000, "HOST" => "localhost" })
+    end
+
+    it "returns a separate copy each time" do
+      hash1 = result.to_h
+      hash2 = result.to_h
+      expect(hash1).not_to be(hash2)
+    end
+  end
+
+  describe "#slice" do
+    it "returns multiple keys" do
+      expect(result.slice(:PORT, :HOST)).to eq({ "PORT" => 3000, "HOST" => "localhost" })
+    end
+  end
+
+  describe "#[]" do
+    it "raises KeyError for unknown symbol key" do
+      expect { result[:NOPE] }.to raise_error(KeyError)
     end
   end
 end
