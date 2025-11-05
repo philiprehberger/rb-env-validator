@@ -18,14 +18,15 @@ module Philiprehberger
     # Define and validate environment variables.
     #
     # @param env [Hash] the environment hash (default: ENV)
+    # @param prefix [String, nil] optional prefix prepended to variable names during lookup
     # @yield [schema] configure the schema
     # @yieldparam schema [Schema]
     # @return [Result] validated values
     # @raise [ValidationError] if validation fails
-    def self.define(env: ENV, &block)
+    def self.define(env: ENV, prefix: nil, &block)
       schema = Schema.new
       schema.instance_eval(&block)
-      Validator.new(schema, env: env).validate!
+      Validator.new(schema, env: env, prefix: prefix).validate!
     end
   end
 end
