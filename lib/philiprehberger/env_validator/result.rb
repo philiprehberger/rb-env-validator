@@ -21,7 +21,7 @@ module Philiprehberger
         @values[key]
       end
 
-      alias_method :[], :fetch
+      alias [] fetch
 
       # @return [Hash<String, Object>] all validated values
       def to_h
