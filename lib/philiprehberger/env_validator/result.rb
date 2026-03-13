@@ -23,6 +23,28 @@ module Philiprehberger
 
       alias [] fetch
 
+      # @return [Array<String>] all defined variable names
+      def keys
+        @values.keys
+      end
+
+      # Check if a variable was defined in the schema.
+      #
+      # @param name [Symbol, String] the variable name
+      # @return [Boolean]
+      def key?(name)
+        @values.key?(name.to_s)
+      end
+
+      # Return a subset hash of specific keys.
+      #
+      # @param names [Array<Symbol, String>] the variable names to include
+      # @return [Hash<String, Object>]
+      def slice(*names)
+        string_keys = names.map(&:to_s)
+        @values.slice(*string_keys)
+      end
+
       # @return [Hash<String, Object>] all validated values
       def to_h
         @values.dup

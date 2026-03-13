@@ -61,6 +61,32 @@ config[:PORT]  # => 8080
 config[:DEBUG] # => true
 ```
 
+### Choices (Allowlist)
+
+```ruby
+config = Philiprehberger::EnvValidator.define(env: { "RAILS_ENV" => "production" }) do
+  string :RAILS_ENV, required: true, choices: %w[production staging development]
+  integer :LOG_LEVEL, default: 1, choices: [0, 1, 2, 3]
+end
+
+config[:RAILS_ENV] # => "production"
+```
+
+If the value is not in the allowed list, a `ValidationError` is raised.
+
+### Result Methods
+
+```ruby
+config = Philiprehberger::EnvValidator.define(env: { "PORT" => "3000", "HOST" => "localhost" }) do
+  integer :PORT, required: true
+  string :HOST, required: true
+end
+
+config.keys            # => ["PORT", "HOST"]
+config.key?(:PORT)     # => true
+config.slice(:PORT)    # => { "PORT" => 3000 }
+```
+
 ### Validation Errors
 
 ```ruby
@@ -88,6 +114,9 @@ end
 |----------------|-------------|
 | `EnvValidator.define(env:, &block)` | Define schema and validate |
 | `Result#fetch(name)` / `Result#[name]` | Get a validated value |
+| `Result#keys` | List all defined variable names |
+| `Result#key?(name)` | Check if a variable was defined |
+| `Result#slice(*names)` | Get a subset hash of specific keys |
 | `Result#to_h` | Get all values as a hash |
 
 ## Development
