@@ -2,6 +2,7 @@
 
 [![Tests](https://github.com/philiprehberger/rb-env-validator/actions/workflows/ci.yml/badge.svg)](https://github.com/philiprehberger/rb-env-validator/actions/workflows/ci.yml)
 [![Gem Version](https://badge.fury.io/rb/philiprehberger-env_validator.svg)](https://rubygems.org/gems/philiprehberger-env_validator)
+[![License](https://img.shields.io/github/license/philiprehberger/rb-env-validator)](LICENSE)
 
 Schema-based environment variable validation with typed accessors for Ruby.
 
