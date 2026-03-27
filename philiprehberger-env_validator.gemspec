@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.authors = ["Philip Rehberger"]
   spec.email = ["me@philiprehberger.com"]
 
-  spec.summary = "Schema-based environment variable validation with typed accessors"
+  spec.summary = "Schema-based environment variable validation with typed accessors for Ruby"
   spec.description = "Define environment variable schemas with type casting, required/optional " \
                      "flags, and defaults. Validates at boot time and provides typed accessors."
   spec.homepage = "https://github.com/philiprehberger/rb-env-validator"
