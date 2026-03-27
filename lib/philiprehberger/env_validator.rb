@@ -1,9 +1,9 @@
 # frozen_string_literal: true
 
-require_relative "env_validator/version"
-require_relative "env_validator/schema"
-require_relative "env_validator/result"
-require_relative "env_validator/validator"
+require_relative 'env_validator/version'
+require_relative 'env_validator/schema'
+require_relative 'env_validator/result'
+require_relative 'env_validator/validator'
 
 module Philiprehberger
   module EnvValidator

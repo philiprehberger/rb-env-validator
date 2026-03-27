@@ -28,7 +28,7 @@ module Philiprehberger
           values[name] = value unless error
         end
 
-        raise ValidationError, errors.join("; ") unless errors.empty?
+        raise ValidationError, errors.join('; ') unless errors.empty?
 
         Result.new(values)
       end
