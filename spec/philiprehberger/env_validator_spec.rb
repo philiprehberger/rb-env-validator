@@ -196,6 +196,66 @@ RSpec.describe Philiprehberger::EnvValidator do
 
       expect(result[:HOST]).to eq('fallback')
     end
+
+    context 'with prefix option' do
+      it 'looks up prefixed variable names in env' do
+        env = { 'REDIS_HOST' => 'localhost', 'REDIS_PORT' => '6379' }
+
+        result = described_class.define(env: env, prefix: 'REDIS_') do
+          string  :HOST, required: true
+          integer :PORT, required: true
+        end
+
+        expect(result[:HOST]).to eq('localhost')
+        expect(result[:PORT]).to eq(6379)
+      end
+
+      it 'applies defaults when prefixed variable is missing' do
+        result = described_class.define(env: {}, prefix: 'APP_') do
+          string :HOST, default: '0.0.0.0'
+        end
+
+        expect(result[:HOST]).to eq('0.0.0.0')
+      end
+
+      it 'includes prefixed name in error messages' do
+        expect do
+          described_class.define(env: {}, prefix: 'DB_') do
+            string :URL, required: true
+          end
+        end.to raise_error(Philiprehberger::EnvValidator::ValidationError, /DB_URL/)
+      end
+
+      it 'works with choices validation' do
+        env = { 'APP_ENV' => 'production' }
+
+        result = described_class.define(env: env, prefix: 'APP_') do
+          string :ENV, required: true, choices: %w[production staging development]
+        end
+
+        expect(result[:ENV]).to eq('production')
+      end
+
+      it 'raises with prefixed name for invalid choice' do
+        env = { 'APP_ENV' => 'invalid' }
+
+        expect do
+          described_class.define(env: env, prefix: 'APP_') do
+            string :ENV, choices: %w[production staging]
+          end
+        end.to raise_error(Philiprehberger::EnvValidator::ValidationError, /APP_ENV must be one of/)
+      end
+
+      it 'works without prefix (nil default)' do
+        env = { 'HOST' => 'localhost' }
+
+        result = described_class.define(env: env) do
+          string :HOST, required: true
+        end
+
+        expect(result[:HOST]).to eq('localhost')
+      end
+    end
   end
 end
 

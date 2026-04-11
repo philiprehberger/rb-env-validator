@@ -9,9 +9,11 @@ module Philiprehberger
 
       # @param schema [Schema] the schema to validate against
       # @param env [Hash] the environment hash (default: ENV)
-      def initialize(schema, env: ENV)
+      # @param prefix [String, nil] optional prefix prepended to variable names during lookup
+      def initialize(schema, env: ENV, prefix: nil)
         @schema = schema
         @env = env
+        @prefix = prefix
       end
 
       # Validate and return a Result.
@@ -36,20 +38,21 @@ module Philiprehberger
       private
 
       def resolve(name, definition)
-        raw = @env[name]
+        env_key = @prefix ? "#{@prefix}#{name}" : name
+        raw = @env[env_key]
 
-        return resolve_missing(name, definition) if raw.nil? || raw.empty?
+        return resolve_missing(env_key, definition) if raw.nil? || raw.empty?
 
-        value = cast(raw, definition[:type], name)
-        validate_choices(name, value, definition[:choices])
+        value = cast(raw, definition[:type], env_key)
+        validate_choices(env_key, value, definition[:choices])
         [value, nil]
       rescue CastError => e
         [nil, e.message]
       end
 
-      def resolve_missing(name, definition)
+      def resolve_missing(env_key, definition)
         if definition[:required] && definition[:default].nil?
-          [nil, "Missing required variable: #{name}"]
+          [nil, "Missing required variable: #{env_key}"]
         else
           [definition[:default], nil]
         end

@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-04-10
+
+### Added
+- `prefix:` option for `EnvValidator.define` to group related variables under a shared prefix
+
+### Changed
+- Trim `.rubocop.yml` to minimal config per guide standards
+- Update issue templates to match guide (add gem version field, alternatives field)
+
+### Fixed
+- Merge duplicate `[0.2.2]` CHANGELOG entries into single entry
+
 ## [0.2.9] - 2026-04-08
 
 ### Changed
@@ -49,8 +61,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Update rubocop configuration for Windows compatibility
-
-## [0.2.2] - 2026-03-21
 
 ### Fixed
 - Standardize Installation section in README

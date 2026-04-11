@@ -82,6 +82,25 @@ config.key?(:PORT)     # => true
 config.slice(:PORT)    # => { "PORT" => 3000 }
 ```
 
+### Prefix
+
+Group related variables with a shared prefix:
+
+```ruby
+env = { "REDIS_HOST" => "localhost", "REDIS_PORT" => "6379", "REDIS_PASSWORD" => "secret" }
+
+config = Philiprehberger::EnvValidator.define(env: env, prefix: "REDIS_") do
+  string  :HOST, required: true
+  integer :PORT, default: 6379
+  string  :PASSWORD
+end
+
+config[:HOST] # => "localhost"
+config[:PORT] # => 6379
+```
+
+The prefix is prepended when looking up each variable in the environment. Result keys use the short name (without prefix). Error messages include the full prefixed name.
+
 ### Validation Errors
 
 ```ruby
@@ -107,7 +126,7 @@ end
 
 | Method / Class | Description |
 |----------------|-------------|
-| `EnvValidator.define(env:, &block)` | Define schema and validate |
+| `EnvValidator.define(env:, prefix:, &block)` | Define schema and validate |
 | `Result#fetch(name)` / `Result#[name]` | Get a validated value |
 | `Result#keys` | List all defined variable names |
 | `Result#key?(name)` | Check if a variable was defined |
