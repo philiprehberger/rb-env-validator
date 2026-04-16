@@ -2,6 +2,6 @@
 
 module Philiprehberger
   module EnvValidator
-    VERSION = '0.3.0'
+    VERSION = '0.4.0'
   end
 end

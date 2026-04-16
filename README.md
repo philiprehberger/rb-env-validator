@@ -113,6 +113,30 @@ end
 #    Missing required variable: DATABASE_URL; Missing required variable: API_KEY
 ```
 
+### Arrays (Delimited Lists)
+
+Parse a delimited ENV value into an array of typed elements:
+
+```ruby
+env = {
+  "TAGS"    => "ruby,rails,hotwire",
+  "PORTS"   => "3000,3001,3002",
+  "PATHS"   => "/usr/bin:/usr/local/bin"
+}
+
+config = Philiprehberger::EnvValidator.define(env: env) do
+  array :TAGS
+  array :PORTS, item_type: :integer
+  array :PATHS, separator: ":"
+end
+
+config[:TAGS]  # => ["ruby", "rails", "hotwire"]
+config[:PORTS] # => [3000, 3001, 3002]
+config[:PATHS] # => ["/usr/bin", "/usr/local/bin"]
+```
+
+Each element is stripped of surrounding whitespace and cast to `item_type`. An empty or missing ENV value yields `[]` (or the configured `default:`). If any element fails to cast a `ValidationError` is raised.
+
 ### Supported Types
 
 | Type | Method | Accepts |
@@ -121,12 +145,14 @@ end
 | Integer | `integer` | Numeric strings (`"42"`, `"-1"`) |
 | Float | `float` | Numeric strings (`"3.14"`, `"1"`) |
 | Boolean | `boolean` | `true/false/1/0/yes/no/on/off` (case-insensitive) |
+| Array | `array` | Delimited string cast to a list of typed elements |
 
 ## API
 
 | Method / Class | Description |
 |----------------|-------------|
 | `EnvValidator.define(env:, prefix:, &block)` | Define schema and validate |
+| `Schema#array(name, item_type:, separator:, required:, default:)` | Declare a delimited list ENV var parsed into a typed array |
 | `Result#fetch(name)` / `Result#[name]` | Get a validated value |
 | `Result#keys` | List all defined variable names |
 | `Result#key?(name)` | Check if a variable was defined |
