@@ -256,6 +256,138 @@ RSpec.describe Philiprehberger::EnvValidator do
         expect(result[:HOST]).to eq('localhost')
       end
     end
+
+    context 'with array type' do
+      it 'parses a comma-separated list of strings by default' do
+        result = described_class.define(env: { 'TAGS' => 'ruby,rails,hotwire' }) do
+          array :TAGS
+        end
+
+        expect(result[:TAGS]).to eq(%w[ruby rails hotwire])
+      end
+
+      it 'strips whitespace around each element' do
+        result = described_class.define(env: { 'TAGS' => 'ruby , rails ,  hotwire  ' }) do
+          array :TAGS
+        end
+
+        expect(result[:TAGS]).to eq(%w[ruby rails hotwire])
+      end
+
+      it 'casts integer elements' do
+        result = described_class.define(env: { 'PORTS' => '3000,3001,3002' }) do
+          array :PORTS, item_type: :integer
+        end
+
+        expect(result[:PORTS]).to eq([3000, 3001, 3002])
+      end
+
+      it 'casts float elements' do
+        result = described_class.define(env: { 'RATES' => '1.5, 2.0, 3.14' }) do
+          array :RATES, item_type: :float
+        end
+
+        expect(result[:RATES]).to eq([1.5, 2.0, 3.14])
+      end
+
+      it 'casts boolean elements' do
+        result = described_class.define(env: { 'FLAGS' => 'true,false,yes,no' }) do
+          array :FLAGS, item_type: :boolean
+        end
+
+        expect(result[:FLAGS]).to eq([true, false, true, false])
+      end
+
+      it 'supports a custom separator' do
+        result = described_class.define(env: { 'PATHS' => '/usr/bin:/usr/local/bin:/opt/bin' }) do
+          array :PATHS, separator: ':'
+        end
+
+        expect(result[:PATHS]).to eq(%w[/usr/bin /usr/local/bin /opt/bin])
+      end
+
+      it 'supports a custom separator with integer casting' do
+        result = described_class.define(env: { 'IDS' => '1|2|3|4' }) do
+          array :IDS, item_type: :integer, separator: '|'
+        end
+
+        expect(result[:IDS]).to eq([1, 2, 3, 4])
+      end
+
+      it 'yields empty array for empty ENV value' do
+        result = described_class.define(env: { 'TAGS' => '' }) do
+          array :TAGS
+        end
+
+        expect(result[:TAGS]).to eq([])
+      end
+
+      it 'yields empty array when ENV var is missing and no default' do
+        result = described_class.define(env: {}) do
+          array :TAGS
+        end
+
+        expect(result[:TAGS]).to eq([])
+      end
+
+      it 'uses default when ENV var is missing' do
+        result = described_class.define(env: {}) do
+          array :TAGS, default: %w[default tag]
+        end
+
+        expect(result[:TAGS]).to eq(%w[default tag])
+      end
+
+      it 'raises ValidationError when required and missing' do
+        expect do
+          described_class.define(env: {}) do
+            array :TAGS, required: true
+          end
+        end.to raise_error(Philiprehberger::EnvValidator::ValidationError, /Missing required variable: TAGS/)
+      end
+
+      it 'raises CastError for element that cannot cast to integer' do
+        expect do
+          described_class.define(env: { 'PORTS' => '3000,abc,3002' }) do
+            array :PORTS, item_type: :integer
+          end
+        end.to raise_error(Philiprehberger::EnvValidator::ValidationError, /Cannot cast PORTS/)
+      end
+
+      it 'raises CastError for element that cannot cast to boolean' do
+        expect do
+          described_class.define(env: { 'FLAGS' => 'true,maybe' }) do
+            array :FLAGS, item_type: :boolean
+          end
+        end.to raise_error(Philiprehberger::EnvValidator::ValidationError, /Cannot cast FLAGS/)
+      end
+
+      it 'raises CastError for element that cannot cast to float' do
+        expect do
+          described_class.define(env: { 'RATES' => '1.5,notafloat' }) do
+            array :RATES, item_type: :float
+          end
+        end.to raise_error(Philiprehberger::EnvValidator::ValidationError, /Cannot cast RATES/)
+      end
+
+      it 'handles a single-element array' do
+        result = described_class.define(env: { 'TAGS' => 'solo' }) do
+          array :TAGS
+        end
+
+        expect(result[:TAGS]).to eq(['solo'])
+      end
+
+      it 'works with prefix option' do
+        env = { 'APP_ALLOWED_HOSTS' => 'example.com,api.example.com' }
+
+        result = described_class.define(env: env, prefix: 'APP_') do
+          array :ALLOWED_HOSTS
+        end
+
+        expect(result[:ALLOWED_HOSTS]).to eq(%w[example.com api.example.com])
+      end
+    end
   end
 end
 

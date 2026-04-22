@@ -41,6 +41,7 @@ module Philiprehberger
         env_key = @prefix ? "#{@prefix}#{name}" : name
         raw = @env[env_key]
 
+        return resolve_array(env_key, raw, definition) if definition[:type] == :array
         return resolve_missing(env_key, definition) if raw.nil? || raw.empty?
 
         value = cast(raw, definition[:type], env_key)
@@ -55,6 +56,25 @@ module Philiprehberger
           [nil, "Missing required variable: #{env_key}"]
         else
           [definition[:default], nil]
+        end
+      end
+
+      def resolve_array(env_key, raw, definition)
+        return resolve_missing_array(env_key, definition) if raw.nil?
+        return [[], nil] if raw.empty?
+
+        elements = raw.split(definition[:separator]).map(&:strip)
+        values = elements.map { |element| cast(element, definition[:item_type], env_key) }
+        [values, nil]
+      rescue CastError => e
+        [nil, e.message]
+      end
+
+      def resolve_missing_array(env_key, definition)
+        if definition[:required] && definition[:default].nil?
+          [nil, "Missing required variable: #{env_key}"]
+        else
+          [definition[:default] || [], nil]
         end
       end
 
