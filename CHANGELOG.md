@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-04-26
+
+### Added
+- `Result#to_h(exclude:)` accepts a list of symbol or string keys to omit from the returned hash, useful for redacting sensitive values during serialization
+
 ## [0.4.0] - 2026-04-16
 
 ### Added

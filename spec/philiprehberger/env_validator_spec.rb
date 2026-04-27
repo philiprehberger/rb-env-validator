@@ -447,6 +447,57 @@ RSpec.describe Philiprehberger::EnvValidator::Result do
       hash2 = result.to_h
       expect(hash1).not_to be(hash2)
     end
+
+    context 'with exclude:' do
+      subject(:result) do
+        described_class.new({ 'PORT' => 3000, 'HOST' => 'localhost', 'API_KEY' => 'secret', 'DB_PASSWORD' => 'pw' })
+      end
+
+      it 'filters out keys provided as symbols' do
+        expect(result.to_h(exclude: %i[API_KEY DB_PASSWORD])).to eq({ 'PORT' => 3000, 'HOST' => 'localhost' })
+      end
+
+      it 'filters out keys provided as strings' do
+        expect(result.to_h(exclude: %w[API_KEY DB_PASSWORD])).to eq({ 'PORT' => 3000, 'HOST' => 'localhost' })
+      end
+
+      it 'returns full hash when exclude is empty' do
+        expect(result.to_h(exclude: [])).to eq({
+                                                 'PORT' => 3000,
+                                                 'HOST' => 'localhost',
+                                                 'API_KEY' => 'secret',
+                                                 'DB_PASSWORD' => 'pw'
+                                               })
+      end
+
+      it 'returns full hash when exclude is omitted' do
+        expect(result.to_h).to eq({
+                                    'PORT' => 3000,
+                                    'HOST' => 'localhost',
+                                    'API_KEY' => 'secret',
+                                    'DB_PASSWORD' => 'pw'
+                                  })
+      end
+
+      it 'returns the unchanged hash when excluded keys do not exist' do
+        expect(result.to_h(exclude: %i[NOPE MISSING])).to eq({
+                                                               'PORT' => 3000,
+                                                               'HOST' => 'localhost',
+                                                               'API_KEY' => 'secret',
+                                                               'DB_PASSWORD' => 'pw'
+                                                             })
+      end
+
+      it 'does not mutate the original Result' do
+        result.to_h(exclude: %i[API_KEY DB_PASSWORD])
+        expect(result.to_h).to eq({
+                                    'PORT' => 3000,
+                                    'HOST' => 'localhost',
+                                    'API_KEY' => 'secret',
+                                    'DB_PASSWORD' => 'pw'
+                                  })
+      end
+    end
   end
 
   describe '#slice' do

@@ -80,7 +80,14 @@ end
 config.keys            # => ["PORT", "HOST"]
 config.key?(:PORT)     # => true
 config.slice(:PORT)    # => { "PORT" => 3000 }
+config.to_h            # => { "PORT" => 3000, "HOST" => "localhost" }
+
+# Redact sensitive keys when serializing (e.g. for logs)
+config.to_h(exclude: %i[api_key])
+# => { "PORT" => 3000, "HOST" => "localhost" }
 ```
+
+The `exclude:` list accepts symbols or strings and is matched against keys regardless of how they are stored internally.
 
 ### Prefix
 
@@ -157,7 +164,7 @@ Each element is stripped of surrounding whitespace and cast to `item_type`. An e
 | `Result#keys` | List all defined variable names |
 | `Result#key?(name)` | Check if a variable was defined |
 | `Result#slice(*names)` | Get a subset hash of specific keys |
-| `Result#to_h` | Get all values as a hash |
+| `Result#to_h(exclude:)` | Get all values as a hash; pass `exclude:` to omit keys (symbols or strings) |
 
 ## Development
 

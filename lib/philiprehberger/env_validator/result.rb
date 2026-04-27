@@ -45,9 +45,15 @@ module Philiprehberger
         @values.slice(*string_keys)
       end
 
-      # @return [Hash<String, Object>] all validated values
-      def to_h
-        @values.dup
+      # Return all validated values as a hash, optionally redacting keys.
+      #
+      # @param exclude [Array<Symbol, String>] keys to omit from the returned hash
+      # @return [Hash<String, Object>] all validated values, minus excluded keys
+      def to_h(exclude: [])
+        return @values.dup if exclude.nil? || exclude.empty?
+
+        excluded_keys = exclude.map(&:to_s)
+        @values.reject { |key, _| excluded_keys.include?(key.to_s) }
       end
     end
   end
