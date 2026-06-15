@@ -4,6 +4,8 @@
 [![Gem Version](https://badge.fury.io/rb/philiprehberger-env_validator.svg)](https://rubygems.org/gems/philiprehberger-env_validator)
 [![Last updated](https://img.shields.io/github/last-commit/philiprehberger/rb-env-validator)](https://github.com/philiprehberger/rb-env-validator/commits/main)
 
+![philiprehberger-env_validator](https://raw.githubusercontent.com/philiprehberger/rb-env-validator/main/package-card.webp)
+
 Schema-based environment variable validation with typed accessors
 
 ## Requirements
@@ -154,6 +156,18 @@ Each element is stripped of surrounding whitespace and cast to `item_type`. An e
 | Boolean | `boolean` | `true/false/1/0/yes/no/on/off` (case-insensitive) |
 | Array | `array` | Delimited string cast to a list of typed elements |
 
+### Immutable Configs
+
+Once validated at boot time, prevent accidental mutation of the result:
+
+```ruby
+ENV_CONFIG = Philiprehberger::EnvValidator.define do
+  string :api_key
+end.freeze!
+
+ENV_CONFIG.fetch(:api_key) << 'tamper'  # => FrozenError
+```
+
 ## API
 
 | Method / Class | Description |
@@ -165,6 +179,7 @@ Each element is stripped of surrounding whitespace and cast to `item_type`. An e
 | `Result#key?(name)` | Check if a variable was defined |
 | `Result#slice(*names)` | Get a subset hash of specific keys |
 | `Result#to_h(exclude:)` | Get all values as a hash; pass `exclude:` to omit keys (symbols or strings) |
+| `Result#freeze!` | Deeply freeze the result; returns self for chaining |
 
 ## Development
 

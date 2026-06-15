@@ -55,6 +55,19 @@ module Philiprehberger
         excluded_keys = exclude.map(&:to_s)
         @values.reject { |key, _| excluded_keys.include?(key.to_s) }
       end
+
+      # Deeply freeze the result so it cannot be mutated after validation.
+      #
+      # Freezes the underlying values hash, all string keys, and any String
+      # values it holds. Useful for global/shared ENV configs that should be
+      # immutable after boot.
+      #
+      # @return [Result] self
+      def freeze!
+        @values.each_value { |v| v.freeze if v.is_a?(String) && !v.frozen? }
+        @values.freeze
+        self
+      end
     end
   end
 end

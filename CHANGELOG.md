@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-06-14
+
+### Added
+- `Result#freeze!` — deeply freezes the underlying values hash and string values, then returns `self`. Lets callers safely treat a validated `Result` as an immutable global/shared config after boot.
+
 ## [0.5.0] - 2026-04-26
 
 ### Added

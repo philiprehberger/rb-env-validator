@@ -500,6 +500,31 @@ RSpec.describe Philiprehberger::EnvValidator::Result do
     end
   end
 
+  describe '#freeze!' do
+    it 'returns self' do
+      result = Philiprehberger::EnvValidator.define(env: { 'API_KEY' => 'abc' }) { string :API_KEY }
+      expect(result.freeze!).to be(result)
+    end
+
+    it 'freezes the underlying values hash' do
+      result = Philiprehberger::EnvValidator.define(env: { 'API_KEY' => 'abc' }) { string :API_KEY }
+      result.freeze!
+      expect { result.fetch(:API_KEY) << 'x' }.to raise_error(FrozenError)
+    end
+
+    it 'freezes string values' do
+      result = Philiprehberger::EnvValidator.define(env: { 'NAME' => 'mutable' }) { string :NAME }
+      result.freeze!
+      expect(result.fetch(:NAME)).to be_frozen
+    end
+
+    it 'does not modify already-frozen string values' do
+      result = Philiprehberger::EnvValidator.define(env: { 'NAME' => 'preset' }) { string :NAME }
+      result.freeze!
+      expect { result.fetch(:NAME) }.not_to raise_error
+    end
+  end
+
   describe '#slice' do
     it 'returns multiple keys' do
       expect(result.slice(:PORT, :HOST)).to eq({ 'PORT' => 3000, 'HOST' => 'localhost' })
